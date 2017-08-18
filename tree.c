@@ -40,7 +40,7 @@ struct tree* succ(struct tree *node,int key)
 		{
 			node = node->right;
 			while(node->left)
-			node = node->left;
+				node = node->left;
 			return node;
 		}
 	}
@@ -72,15 +72,18 @@ struct tree* pred(struct tree *node, int key)
 			while(node->parent)
 			{
 				if(node->parent->right == node)
-				return node->parent;
+					return node->parent;
+				
 				node = node->parent;
 			}
 		}
 		else
 		{
 			node = node->left;
+			
 			while(node->right)
-			node = node->right;
+				node = node->right;
+			
 			return node;
 		}
 	}
@@ -184,8 +187,8 @@ void findRank(struct tree *root,int key)
 			if(root->parent->right == root)
 			{
 				if(root->parent->left)
-				r = r+root->parent->left->no+1;
-				else
+					r = r+root->parent->left->no;
+					
 				r+=1;
 			}
 			root = root->parent;
@@ -193,7 +196,7 @@ void findRank(struct tree *root,int key)
 		printf("%d\n",r);
 	}
 	else
-	printf("%d doesn't exist in the tree",key);
+	printf("%d doesn't exist in the tree\n",key);
 }
 
 int findIth(struct tree *r, int i)
@@ -201,11 +204,11 @@ int findIth(struct tree *r, int i)
 	if(r && i>0)
 	{
 		if((r->left->no)>(i-1))
-		return findIth(r->left,i);
+			return findIth(r->left,i);
 		else if(r->left->no == (i-1))
-		return r->data;
+			return r->data;
 		else
-		return findIth(r->right,i-(r->left->no)-1);
+			return findIth(r->right,i-(r->left->no)-1);
 	}
 	return -1;
 }
@@ -233,9 +236,9 @@ void delete(struct tree **r, int key)
 			if(temp->parent)
 			{
 				if(temp->parent->right == temp)
-				temp->parent->right = NULL;
+					temp->parent->right = NULL;
 				else if(temp->parent->left == temp)
-				temp->parent->left = NULL;
+					temp->parent->left = NULL;
 				update(temp->parent,-1);
 			}
 			free(temp);
@@ -284,37 +287,66 @@ void delete(struct tree **r, int key)
 				}
 				temp->left->parent = temp->right;
 				temp->right->left = temp->left;
-				is->no = temp->no-1;
+				
+				is->no = temp->no - 1;
+				if(!(temp->parent))
+				*r = is;
+				update(is->parent,-1);
+				free(temp);
 			}
 			else
 			{
 				if(temp->parent)
 				{
 					if(temp->parent->right == temp)	
-					temp->parent->right = is;
+						temp->parent->right = is;
 					else
-					temp->parent->left = is;
+						temp->parent->left = is;
 					if(is->right)
-					is->right->parent = is->parent;
+						is->right->parent = is->parent;
 					is->parent->left = is->right;
 					struct tree *temp2 = is->parent;
-					is->parent = temp->parent;
+					
+					
+					if(temp->left)
+						temp->left->parent = is;
+						
 					is->left = temp->left;
+					
+					if(temp->right)
+						temp->right->parent = is;
+						
 					is->right = temp->right;
+					
+					is->parent = temp->parent;
 					is->no = temp->no;
+					
 					update(temp2,-1);
 				}
 				else
 				{
 					if(is->right)
-					is->right->parent = is->parent;
+						is->right->parent = is->parent;
 					is->parent->left = is->right;
 					struct tree *temp2 = is->parent;
-					is->parent = temp->parent;
+					
+					
+					
+					if(temp->left)
+						temp->left->parent = is;
+						
 					is->left = temp->left;
+					
+					if(temp->right)
+						temp->right->parent = is;
+					
 					is->right = temp->right;
+					
 					is->no = temp->no;
+					is->parent = temp->parent;
+					
 					update(temp2,-1);
+					
 					*r = is;
 				}
 				free(temp);
@@ -331,7 +363,8 @@ void delete(struct tree **r, int key)
 int main()
 {
 
-	struct tree *root,temp;
+	struct tree *root = NULL;
+	struct tree *temp = NULL;
 	int n,k;
 	while(1)
 	{
@@ -352,7 +385,7 @@ int main()
 				
 			case 3: printf("Enter the element: ");
 				scanf("%d",&k);
-				struct tree *temp = succ(root,k);
+				temp = succ(root,k);
 				if(temp)
 					printf("%d\n",temp->data);
 				else
