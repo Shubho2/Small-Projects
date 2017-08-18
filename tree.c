@@ -290,7 +290,10 @@ void delete(struct tree **r, int key)
 				
 				is->no = temp->no - 1;
 				if(!(temp->parent))
+				{
 				*r = is;
+				is->parent = NULL;
+				}
 				update(is->parent,-1);
 				free(temp);
 			}
