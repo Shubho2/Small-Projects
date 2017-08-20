@@ -1,3 +1,9 @@
+//*** parenthesis check using a dynamic sized stack
+//**
+
+
+
+
 #include<stdio.h>
 #include<stdlib.h>
 
