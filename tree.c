@@ -353,7 +353,14 @@ void delete(struct tree **r, int key)
 		printf("The key doesn not exist in the tree\n");			
 }
 
-
+void destroy(struct tree *root)
+{
+	if(root == NULL)
+	return;
+	destroy(root->left);
+	destroy(root->right);
+	free(root);
+}
 
 
 int main()
@@ -410,7 +417,8 @@ int main()
 				printf("%d\n",findIth(root,k));
 				break;
 			
-			case 7: free(root);
+			case 7: destroy(root);
+				
 				return 0;
 		}
 	}
