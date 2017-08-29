@@ -54,8 +54,8 @@ void deQueue(struct que *q)    // function to delete string from the queue(satel
 		printf("queue is empty\n");
 		return;
 	}
-	else if(q->size == q->capacity/4)  // checking if the size of the queue is 1/4 th of the total capacity and then reduce the capacity to half of the current
-	{
+	else if(q->size == q->capacity/4)  // checking if the size of the queue is 1/4 th of the total capacity and then reduce the 
+	{                                                                         // capacity to half of the current
 		q->capacity /= 2;
 		char **r = (char**)malloc(sizeof(char*)*q->capacity);
 		char **p = r;
@@ -265,7 +265,6 @@ void destroy(struct tree *root, char *s)
 {
 	root = search(root,s);
 	makeFree(root);
-	
 }
 
 
@@ -299,6 +298,7 @@ int main()
 	dequeue(root,"LMR");
 	traverse(root);
         destroy(root,"");
+        
         /*char s[20];
         char ch;
         int i = 0;
