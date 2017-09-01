@@ -22,22 +22,24 @@ struct que{
 	 
 void enQueue(struct que *q, char *str)  // function to put strings in the queue(satelite data)
 {
-        int i;
+        int i,j;
 	if(q->size == q->capacity)  // checking if the queue is full
 	{
+		i = q->size;
+		j = q->front;
 		q->capacity *=2;
 		char **r = (char**)malloc(sizeof(char*)*q->capacity);
 		char **p = r;
-		*r = q->s[q->front++];
-		for(i = q->front; i < (q->rear); i=(i+1)%q->size)
+		while(i--)
 		{
-			*r = q->s[q->front];
-			*r++;
+			*p = q->s[j];
+			j = (j+1)%q->size;
+			*p++;
 		}
 		q->front = 0;
 		q->rear = q->size;
 		char **temp = q->s;
-		q->s = p;
+		q->s = r;
 		free(temp);
 	}
 	 
@@ -48,27 +50,30 @@ void enQueue(struct que *q, char *str)  // function to put strings in the queue(
 		
 void deQueue(struct que *q)    // function to delete string from the queue(satelite data)
 {
-	int i;
+	int i,j;
 	if(q->size == 0)
 	{
 		printf("queue is empty\n");
 		return;
 	}
-	else if(q->size == q->capacity/4)  // checking if the size of the queue is 1/4 th of the total capacity and then reduce the 
-	{                                                                         // capacity to half of the current
+	else if(q->size <= q->capacity/4)  // checking if the size of the queue is 1/4 th of the total capacity and then reduce the 
+	{      
+		i = q->size;                                                    // capacity to half of the current
+		j = q->front;
 		q->capacity /= 2;
 		char **r = (char**)malloc(sizeof(char*)*q->capacity);
 		char **p = r;
-		*r = q->s[q->front++];
+		while(i--)
 		for(i = q->front; i < (q->rear); i=(i+1)%q->size)
 		{
-			*r = q->s[q->front];
-			*r++;
+			*p = q->s[j];
+			j = (j+1)%q->size;
+			*p++;
 		}
 		q->front = 0;
 		q->rear = q->size;
 		char **temp = q->s;
-		q->s = p;
+		q->s = r;
 		free(temp);
 	}
 	
@@ -114,28 +119,7 @@ void show(struct que *q)
 		n--;
 	}
 	
-}
-void swap(struct tree **root, struct tree *r,struct tree *temp) // swapping two nodes
-{
-	struct tree *a,*b,*c;
-	
-	a = (*root)->left;
-	b = (*root)->right;
-	c = (*root)->mid;
-	(*root)->left = r->left;
-	(*root)->right = r->right;
-	(*root)->mid = r->mid;
-	r->left = a;
-	r->right = b;
-	r->mid = c;
-	if(temp->left == r)
-	temp->left = *root;
-	else if(temp->right == r)
-	temp->right = *root;
-	else
-	temp->mid = *root;
-	*root = r;
-} 	
+}	
 	
 
 struct tree *initialize()  // initialize a node in the tree
@@ -180,73 +164,12 @@ void dequeue(struct tree *root, char *s)
 	deQueue(root->q);
 }
 
-void access(struct tree **root, char *s)
+void access(struct tree *root, char *s)
 {
-	struct tree *r,*temp;
-	r = *root;
-	while(*s!='\0')
-	{
-		if(*s == 'L')
-		{
-			temp = r;
-			r = r->left;
-		}
-		else if(*s == 'M')
-		{
-			temp = r;
-			r = r->mid;
-		}
-		else if(*s == 'R')
-		{
-			temp = r;
-			r = r->right;
-		}
-		s++;
-	}
-	struct tree *a,*b,*c;
-	
-	a = (*root)->left;
-	b = (*root)->right;
-	c = (*root)->mid;
-	(*root)->left = r->left;
-	(*root)->right = r->right;
-	(*root)->mid = r->mid;
-	if(temp != *root)
-	{
-		r->left = a;
-		r->right = b;
-		r->mid = c;
-		if(temp->left == r)
-		temp->left = *root;
-		else if(temp->right == r)
-		temp->right = *root;
-		else
-		temp->mid = *root;
-	}
-	else
-	{
-		if(temp->left == r)
-		{
-			r->left = *root;
-			r->mid = c;
-			r->right = b;
-		}
-		else if(temp->right == r)
-		{
-			r->right = *root;
-			r->mid = c;
-			r->left = a;
-		}
-		else
-		{
-			r->mid = *root;
-			r->left = a;
-			r->right = b;
-		}
-	}
-	*root = r;
-	
-	//swap(root,r,temp);
+	struct tree *r = search(root,s);
+	struct que *temp = r->q;
+	r->q = root->q;
+	root->q = temp;
 }
 
 void makeFree(struct tree *r) // freeing all the memory related to the subtree rooted at node r
@@ -261,45 +184,48 @@ void makeFree(struct tree *r) // freeing all the memory related to the subtree r
 	free(r);
 }
 
-void destroy(struct tree *root, char *s)
+void destroy(struct tree **root, char *s)
 {
-	root = search(root,s);
-	makeFree(root);
+	struct tree *r,*temp;
+	r = *root;
+	int l = 5;
+	while(*s!='\0')
+	{
+		temp = r;
+		if(*s == 'L')
+		{
+			r = r->left;
+			l = -1;
+		}
+		else if(*s == 'M')
+		{
+			r = r->mid;
+			l = 0;
+		}
+		else if(*s == 'R')
+		{
+			r = r->right;
+			l = 1;
+		}
+		s++;
+	}
+	makeFree(r);
+	if(l==-1)
+	temp->left = NULL;
+	else if(l == 0)
+	temp->mid = NULL;
+	else if(l == 1)
+	temp->right = NULL;
+	else
+	*root = NULL;
 }
 
 
 
 int main()
 {
-	struct tree *root = initialize();
-	
-	insert(root);
-	
-	
-	enqueue(root,"");
-	//enqueue(root,"");
-	enqueue(root,"L");
-	traverse(root);
-	struct tree *temp = search(root,"L");
-	insert(temp);
-	enqueue(root,"LL");
-	dequeue(root,"");
-	traverse(root);
-	temp = search(root,"LM");
-	insert(temp);
-	enqueue(root,"LMR");
-	enqueue(root,"LMR");
-	dequeue(root,"LL");
-	enqueue(root,"LM");
-	traverse(root);
-	dequeue(root,"LMR");
-	access(&root,"LM");
-	traverse(root);
-	dequeue(root,"LMR");
-	traverse(root);
-        destroy(root,"");
         
-        /*char s[20];
+        char s[20];
         char ch;
         int i = 0;
         int n;
@@ -351,7 +277,7 @@ int main()
         				s[i++] = ch;
         				
         			s[i] =	'\0';
-      				access(&root,s);
+      				access(root,s);
       				break;
       				
       			case 7: printf("give the position to destroy in terms of string: ");
@@ -359,11 +285,12 @@ int main()
         				s[i++] = ch;
         				
         			s[i] =	'\0';
-      				destroy(root,s);
+      				destroy(&root,s);
       				break;
       				
-      			case 8: return 0;
+      			case 8: destroy(&root,"");
+      				return 0;
       			}
-      		}*/		
+      		}	
 
 }

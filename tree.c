@@ -118,14 +118,13 @@ void insert(struct tree **root, int key)
 		struct tree *temp2;                 //temp2 is used to store the address of the parent of the newly created node
 		while(temp)
 		{
+			temp2 = temp;
 			if(temp->data>key)           //malloc hasn't been done independently because, it may so happen that user wants to
 			{                            //enter duplicate data, but we already did the malloc (wastage of space)
-				temp2 = temp;
 				temp = temp->left;
 			}
 			else if(temp->data<key)
 			{
-				temp2 = temp;
 				temp = temp->right;
 			}
 			else
@@ -182,20 +181,50 @@ void findRank(struct tree *root,int key)
 
 int findIth(struct tree *r, int i)
 {
+	int j;
+	
 	if(r && i>0)
 	{
-		if(!(r->left) && i==1)   //if we come to any 2 extreme we will return the data if i=1 
+		if(r->left)
+		j = r->left->no;
+		else
+		j = 0;
+		
+		if(j == i-1)   //if we come to any 2 extreme we will return the data if i=1 
 			return r->data;
+		                    
 		
-		else if(r->left->no == (i-1)) // value at the root
-			return r->data;                    
-		
-		else if((r->left->no)>(i-1))           //if the value of i is less than no of nodes considering left subtree and root then 
+		else if(j>(i-1))           //if the value of i is less than no of nodes considering left subtree and root then 
 			return findIth(r->left,i);                     // search in the left subtree
 		else
-			return findIth(r->right,i-(r->left->no)-1); // otherwise go for i-(no of nodes considering left subtree and root)
+			return findIth(r->right,i-j-1); // otherwise go for i-(no of nodes considering left subtree and root)
 	}                                                                // -th element in the right subtree
 	return -1;
+}
+
+void transplant(struct tree **root,struct tree *a,struct tree *b)
+{
+	if(!a->parent)         // deleting the root
+	{
+		if(b)
+		b->parent = NULL;
+		*root = b;
+	}      
+	else
+	{
+		
+		if(a->parent->right == a)
+			a->parent->right = b;
+		
+		else
+			a->parent->left = b;
+		
+	}
+	if(b)
+	{
+		b->parent = a->parent;
+		b->no = a->no;
+	}
 }
 
 void delete(struct tree **r, int key)
@@ -203,154 +232,47 @@ void delete(struct tree **r, int key)
 	struct tree *temp = *r;
 	
 	temp = search(temp,key);
-	
 	if(temp)
 	{
-		if(temp->left == NULL && temp->right == NULL) // if the node to be deleted is a node with no child
+		if(!temp->right) // when the node has only left child
 		{
-			if(temp->parent)        // deleting a leaf node
-			{
-				if(temp->parent->right == temp)
-					temp->parent->right = NULL;
-				else if(temp->parent->left == temp)
-					temp->parent->left = NULL;
-				update(temp->parent,-1);
-			}
+			transplant(r,temp,temp->left);
+			if(temp->left)
+			update(temp->left,-1);
 			else
-				*r = NULL;  // deleting a root node
-				
+			update(temp->parent,-1);
 			free(temp);
 		}
-		else if(temp->left && !temp->right) // when the node has only left child
+		else if(!temp->left)  //when the node has only right child
 		{
-			if(!temp->parent)         // deleting the root
-				*r = temp->left;      
-			else
-			{
-				if(temp->parent->right == temp)
-				{
-					temp->parent->right = temp->left;
-					temp->left->parent = temp->parent;
-				}
-				else
-				{
-					temp->parent->left = temp->left;
-					temp->left->parent = temp->parent;
-				}
-			
-				update(temp->parent,-1);
-			}
-			free(temp);
-		}
-		else if(!temp->left && temp->right)  //when the node has only right child
-		{
-			if(!temp->parent)
-				*r = temp->right;  //deleting the root
-			else
-			{
-				if(temp->parent->right == temp)
-				{
-					temp->parent->right = temp->right;
-					temp->right->parent = temp->parent;
-				}
-				else
-				{
-					temp->parent->left = temp->right;
-					temp->right->parent = temp->parent;
-				}
-			
-				update(temp->parent,-1);
-			}
+		        transplant(r,temp,temp->right);
+			update(temp->right,-1);
 			free(temp);
 		}
 		else                               // when the node has two child
 		{
-			struct tree *is = succ(temp,key);  // successor is used to replace the position of the node to be deleted
-			if(temp->right == is)              // when the successor is the right child of the node
+			struct tree *is = succ(temp,key);       // successor is used to replace the position of the node to be deleted
+			struct tree *t; 
+			if(is->right)   // storing the pointer from which we have to update the "no" value 
+			t = is->right;
+			else
+			t = is;
+			if(is->parent != temp)          // when the successor isn't the right child of the node
 			{
-				if(temp->parent)
-				{
-					if(temp->parent->left == temp)       // attaching the descendants to the parent of the node to 
-					temp->parent->left = temp->right;    // be deleted
-					
-					else
-					temp->parent->right = temp->right;
-					
-					temp->right->parent = temp->parent;
-				}
-				temp->left->parent = temp->right;
-				temp->right->left = temp->left;
-				
-				is->no = temp->no - 1;
-				if(!(temp->parent))   // if the node (to be deleted) is the root
-				{
-					*r = is;
-					is->parent = NULL;
-				}
-				update(is->parent,-1);
-				free(temp);
+				transplant(r,is,is->right); // occupying position of is by is->right, because there's no left child
+				is->right = temp->right;
+				temp->right->parent = is;
 			}
-			else       // when the successor isn't the right child
-			{
-				if(temp->parent)
-				{
-					if(temp->parent->right == temp)	
-						temp->parent->right = is;
-					else
-						temp->parent->left = is;
-					if(is->right)
-						is->right->parent = is->parent;
-					is->parent->left = is->right;
-					struct tree *temp2 = is->parent;
-					
-					
-					if(temp->left)
-						temp->left->parent = is;
-						
-					is->left = temp->left;
-					
-					if(temp->right)
-						temp->right->parent = is;
-						
-					is->right = temp->right;
-					
-					is->parent = temp->parent;
-					is->no = temp->no;
-					
-					update(temp2,-1);
-				}
-				else
-				{
-					if(is->right)
-						is->right->parent = is->parent;
-					is->parent->left = is->right;
-					struct tree *temp2 = is->parent;
-					
-					
-					
-					if(temp->left)
-						temp->left->parent = is;
-						
-					is->left = temp->left;
-					
-					if(temp->right)
-						temp->right->parent = is;
-					
-					is->right = temp->right;
-					
-					is->no = temp->no;
-					is->parent = temp->parent;
-					
-					update(temp2,-1);
-					
-					*r = is;
-				}
-				free(temp);
-			}	
-		}  
+			transplant(r,temp,is);                        
+			is->left = temp->left;                      
+			temp->left->parent = is;
+			update(t,-1);
+			free(temp);
+		}	
+		 
 	}
 	else
-		printf("The key doesn not exist in the tree\n");			
+		printf("The key does not exist in the tree\n");			
 }
 
 void destroy(struct tree *root)
@@ -362,6 +284,18 @@ void destroy(struct tree *root)
 	free(root);
 }
 
+void show(struct tree *r)
+{
+	if(r == NULL)
+	return;
+	show(r->left);
+	printf("%d %d\n",r->data,r->no);
+	show(r->right);
+	
+}
+
+
+
 
 int main()
 {
@@ -372,7 +306,7 @@ int main()
 	while(1)
 	{
 		printf("Enter your choice\n");
-		printf("1.Insert\n2:Delete\n3:Successor\n4:Predecessor\n5:findRank\n6:findIth\n7:exit\n");
+		printf("1.Insert\n2:Delete\n3:Successor\n4:Predecessor\n5:findRank\n6:findIth\n7:show\n8:exit\n");
 		scanf("%d",&n);
 		switch(n)
 		{
@@ -417,9 +351,17 @@ int main()
 				printf("%d\n",findIth(root,k));
 				break;
 			
-			case 7: destroy(root);
+			case 7: if(root == NULL)
+				printf("tree is empty\n");
+				else
+				show(root);
+				break;
+				
+			case 8: destroy(root);
 				
 				return 0;
+				
+		       default: printf("Wrong Choice");
 		}
 	}
 }
