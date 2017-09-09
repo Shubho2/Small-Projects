@@ -206,8 +206,6 @@ void transplant(struct tree **root,struct tree *a,struct tree *b)
 {
 	if(!a->parent)         // deleting the root
 	{
-		if(b)
-		b->parent = NULL;
 		*root = b;
 	}      
 	else
@@ -234,7 +232,7 @@ void delete(struct tree **r, int key)
 	temp = search(temp,key);
 	if(temp)
 	{
-		if(!temp->right) // when the node has only left child
+		if(!temp->right) // when the node has only left child or no child
 		{
 			transplant(r,temp,temp->left);
 			if(temp->left)
@@ -253,12 +251,12 @@ void delete(struct tree **r, int key)
 		{
 			struct tree *is = succ(temp,key);       // successor is used to replace the position of the node to be deleted
 			struct tree *t; 
-			if(is->right)   // storing the pointer from which we have to update the "no" value 
-			t = is->right;
-			else
-			t = is;
+			t = is;     // storing the pointer from which we have to update the "no" value 
+			
 			if(is->parent != temp)          // when the successor isn't the right child of the node
 			{
+				if(!is->right) //if there is no is->right no point in updating from that is position
+				t = is->parent;
 				transplant(r,is,is->right); // occupying position of is by is->right, because there's no left child
 				is->right = temp->right;
 				temp->right->parent = is;
@@ -294,19 +292,56 @@ void show(struct tree *r)
 	
 }
 
-
-
+void split(struct tree *root, struct tree **a, struct tree **b,int key)
+{
+	int l;                      // keeping track if we are going through left spine or not
+	struct tree *temp1,*temp2;
+	while(root)
+	{
+		if(root->data>key)
+		{
+			if((*b) == NULL)
+			{
+				*b = root;
+				l = 1;
+			}
+			if(l == 0)
+			temp2->left = root;
+			temp2 = root;
+			root = root->left;
+			l = 1;
+		}	
+		else 
+		{
+			if((*a) == NULL)
+			{
+				*a = root;
+				l = 0;
+			}
+			if(l == 1)
+			temp1->right = root;
+			temp1 = root;
+			root = root->right;
+			l = 0;
+		}
+		
+	}
+	temp2->left = NULL;
+	temp1->right = NULL;
+}
 
 int main()
 {
 
 	struct tree *root = NULL;
-	struct tree *temp = NULL;
+	struct tree *temp;
+	struct tree *a = NULL;
+	struct tree *b = NULL;
 	int n,k;
 	while(1)
 	{
 		printf("Enter your choice\n");
-		printf("1.Insert\n2:Delete\n3:Successor\n4:Predecessor\n5:findRank\n6:findIth\n7:show\n8:exit\n");
+		printf("1.Insert\n2:Delete\n3:Successor\n4:Predecessor\n5:findRank\n6:findIth\n7:show\n8:split\n9:exit\n");
 		scanf("%d",&n);
 		switch(n)
 		{
@@ -357,8 +392,19 @@ int main()
 				show(root);
 				break;
 				
-			case 8: destroy(root);
-				
+			case 8: printf("enter the key to split: ");
+				scanf("%d",&k);
+				split(root,&a,&b,k);
+				show(a);
+				printf("\n");
+				show(b);
+				printf("\n");
+				break;
+			case 9: destroy(root);
+				if(a!=root)
+				destroy(a);
+				else
+				destroy(b);
 				return 0;
 				
 		       default: printf("Wrong Choice");
