@@ -251,12 +251,14 @@ void delete(struct tree **r, int key)
 		{
 			struct tree *is = succ(temp,key);       // successor is used to replace the position of the node to be deleted
 			struct tree *t; 
-			t = is;     // storing the pointer from which we have to update the "no" value 
+			t = is;     // storing the pointer from which we have to update the "no" value assuming temp->right = is
 			
 			if(is->parent != temp)          // when the successor isn't the right child of the node
 			{
 				if(!is->right) //if there is no is->right no point in updating from that is position
 				t = is->parent;
+				else            //updating t because is will transplant to the position of temp pointer
+				t = is->right;
 				transplant(r,is,is->right); // occupying position of is by is->right, because there's no left child
 				is->right = temp->right;
 				temp->right->parent = is;
