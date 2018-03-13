@@ -1,0 +1,35 @@
+                                                    Simple Shell Implementation
+
+/******************************************************----Program Flow----*****************************************************************/
+
+
+Function Wise Explanation of the main c program (shell.c):
+
+	main() -----> takeInput() // Taking input from command line
+	  |
+	  |
+	  ----------> processString() // parse the whole string in smaller strings depending on space and redirection(>/>>) operators
+	  |		  |
+	  |		  ------->parseSpace() // Extractig the individual words from the entire strings
+	  |		  |
+	  |		  -------->parseOp() // Divide the whole string in two strings which are divided by >/>> operator 
+	  |
+	  |
+	  |
+	  |
+	  ----------> execArgs() // executing commands which have no redirection operators
+	  |
+	  |
+	  ----------> execArgsRedirect() // executing commands which have redirection operators
+	  
+	  
+Note: The function execArgs() and execArgsRediect() executing the command by spawning a child process which will execute a local object file for that command using exexvp() system call.
+
+The commands Implemented are:
+	"cd"   : built-in command
+	"exit" : built-in command
+	"help" : built-in command
+	"mkdir": object file will be created "md"
+	"cat"  : object file will be created "concat" 
+	"top"  : object file will be created "top"
+	    

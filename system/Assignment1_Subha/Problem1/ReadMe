@@ -1,0 +1,12 @@
+                                                      Plotting Page Fault Rate
+
+/******************************************************----Program Flow----*****************************************************************/
+
+1. Using dd command a file of (count*bs) size is created.
+
+2. Then freeing pagecache, dentries and inodes (flushing cache) using system command.
+
+3. fstat() function used to get information of a file linked to file descriptor returned by open() system call.
+
+4. mmap() function is used to map the file from secondary memory to virtual address space of calling process.
+

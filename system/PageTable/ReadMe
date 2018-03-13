@@ -1,0 +1,27 @@
+                                                      Page Table Simulation
+
+/******************************************************----Program Flow----*****************************************************************/
+
+
+Function Wise Explanation of the c programs :
+
+	OS.c : It will first create the page table in a shared memory and wait for the signal SIGUSR1, which is the signal to serve 		       the page fault, from the MMU.
+	
+	MMU.c : This program will attach the page table shared memory segmet in its address space and go on serve the requests for        			pages from different proceses.
+	
+	
+	Control flow:
+	
+	MMU.c : looking for a page in the page table as per request <------------------                                                      
+	 |                                            ^                               |
+	 |                                            |                               --------------------------------------
+	 |If present                                  |                                    Signal SIGCONT to MMU           |
+	 ---------------> page hit and serve the request                                                                   |
+	 |                                                                                                                 |
+	 |                                                                                                                 |
+	 |If not present                                                                                                   |
+	 ---------------> page miss and send signal SIGUSR1 to OS.c to service the page fault                              |
+	                   |                                                                                               |
+	                   |                                                                                               |
+	                   |                                                                                               |
+	                   ----> OS.c : catch the signal and  Serve the page fault as per the user's given choice of replacement policy

@@ -1,0 +1,24 @@
+							Flight Reservation System
+							
+
+/******************************************************----Program Flow----*****************************************************************/
+
+
+Function Wise Explanation:
+	main()----> Init() // Initialze all the flight capacity as 150 and share it with the child using Shared Memory
+	  |
+	  |
+	  --------> spawnchild() // It will create a child process which will first create 20 threads and then read queries from a file
+	                 |            and take user input to put it in the shared table, which is shared between threads 
+	  		 |
+			 |
+			 |
+			 --------> spawnthread() // It will process the outstanding queries from the shared table in a synchronized manner
+			 			    and in order of timestamp
+			 			    
+			 			
+			 			
+			 			
+Note: After a certain interval the sytem(child process) will stop taking queries and waiting for threads to service all the remaining    queries. Child will exit and transfer its controls to the parent function. Parent will then show the status of each flight and terminate.   
+			 			 
+
