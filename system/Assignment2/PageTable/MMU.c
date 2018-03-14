@@ -118,9 +118,9 @@ int main(int argc,char *argv[])
 				for(i=0;i<ptable_size;i++)
 				{
 					if(i == pageno)
-						pt[i].latest_access_bit = 1;
+						pt[i].latest_access_bit = true;
 					else
-						pt[i].latest_access_bit = 0;
+						pt[i].latest_access_bit = false;
 				}
 
 				if(mode == 'w' || mode == 'W')

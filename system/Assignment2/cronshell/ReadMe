@@ -1,0 +1,22 @@
+                                                     Cron Shell Simulation
+
+/******************************************************----Program Flow----*****************************************************************/
+
+
+Function Wise Explanation of the c program (cron.c):
+
+	main()------> daemonize() // daemonize the process to run in the background
+	  |
+	  |
+	  --> matched() // try to find match with respect to recent time in the file
+          |
+  		  ------->check() // checking if the task meant for that particular time instance
+		  		  |
+		  		  ------> parseMon() // finding corresponding system value for the given month
+	  			  |
+	  			  ------> parseWOD() // finding corresponding system value for the given week of day
+
+
+NOTE: This program is designed to run the daemon in the background for a cetain time. It reads a crontab file from the home folder and mail the log information to user in a file named "syslog" in the home folder. 
+	 
+	

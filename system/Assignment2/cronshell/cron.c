@@ -120,16 +120,13 @@ int parseWOD(char *day)
 // flag = 1 means month, flag = 2 means day of week and flag = 0 means others
 bool check(int arg, char *str, int low, int high, int flag) 
 {
-	if(*str == '#')
-		return 0;
-	else if(!strcmp(str,"*"));
+	if(!strcmp(str,"*"))
 		return 1;
-
 	int arg1,arg2;
 	char *llimit,*ulimit;
 	char *ch1 = strchr(str,'-');
 	char *ch2 = strchr(str,',');
-	char *ch3 = strchr(str,'/');
+	char *ch3 = strchr(str,'/'); 
 
 	if(!ch1 && !ch2 && !ch3)
 	{
@@ -146,16 +143,84 @@ bool check(int arg, char *str, int low, int high, int flag)
 		}
 		return (arg == arg1);
 	}
+	else if(ch1 && ch2)
+	{
+		char *left;
+		while((left = strsep(&str,","))!=NULL)
+		{
+			llimit = strsep(&left,"-");
+			ulimit = strsep(&left,"-");
+			printf("%s %s\n", llimit,ulimit);
+
+			if(isalpha(*llimit))
+			{
+				if(flag == 1)
+				{
+					arg1 = parseMon(llimit);
+					arg2 = parseMon(ulimit);
+				}
+				else if(flag == 2)
+				{
+					arg1 = parseWOD(llimit);
+					arg2 = parseWOD(ulimit);
+				}
+			}
+			else
+			{
+				arg1 = atoi(llimit);
+				arg2 = atoi(ulimit);
+			}
+
+			if(arg>=arg1 && arg<=arg2)
+				return 1;
+		}
+	}
+	else if(ch1 && ch3)
+	{
+		int i,arg3;
+		char *left,*right;
+		left = strsep(&str,"/");
+		right = strsep(&str,"/");
+		llimit = strsep(&left,"-");
+		ulimit = strsep(&left,"-");
+		arg3 = atoi(right);
+
+		if(isalpha(*llimit))
+		{
+			if(flag == 1)
+			{
+				arg1 = parseMon(llimit);
+				arg2 = parseMon(ulimit);
+			}
+			else if(flag == 2)
+			{
+				arg1 = parseWOD(llimit);
+				arg2 = parseWOD(ulimit);
+			}
+		}
+		else
+		{
+			arg1 = atoi(llimit);
+			arg2 = atoi(ulimit);
+		}
+		if(arg1>=low && arg2<=high)
+		{
+			for(i=arg1;i<=arg2;i=i+arg3)
+			{
+				if(i == arg)
+					return 1;
+			}
+		}
+
+	}
 	else if(ch1)
 	{
-		printf("%s\n",str);
 		llimit = strsep(&str,"-");
 		ulimit = strsep(&str,"-");
 		//printf("%s %s\n", llimit,ulimit);
 
 		if(isalpha(*llimit))
 		{
-		//printf("here\n");
 			if(flag == 1)
 			{
 				arg1 = parseMon(llimit);
@@ -227,6 +292,8 @@ bool check(int arg, char *str, int low, int high, int flag)
 
 void matched(struct tm* tm)
 {
+	int ch;
+	char line[200];
 	FILE *fp = fopen("crontab","r");
 	char err_message[200] = "echo \"could not open the file crontab\">> syslog";
 
@@ -239,9 +306,16 @@ void matched(struct tm* tm)
 	char minute[60],hour[60],dom[60],month[60],dow[60],command[100];
 
 	//Reading crontab file
-	while(fscanf(fp,"%s %s %s %s %s %[^\n]\n",minute,hour,dom,month,dow,command) != EOF)
+	while((ch=fgetc(fp))!=EOF)
 	{
+		if(ch == '#')
+			fgets(line,200,fp);
+		else
+			ungetc(ch,fp);
+
+		fscanf(fp,"%s %s %s %s %s %[^\n]\n",minute,hour,dom,month,dow,command);
 		//printf("%s %s %s %s %s %s\n",minute,hour,dom,month,dow,command);
+
 		if (check(tm->tm_min,minute,0,59,0) && check(tm->tm_hour,hour,0,23,0) 
 			&& check(tm->tm_mday,dom,1,31,0) && check(tm->tm_mon,month,0,11,1) 
 			&& check(tm->tm_wday,dow,0,6,2))
@@ -258,6 +332,9 @@ int main()
 {
 	// Daemonizing the process
 	daemonize();
+	// char dir[20] = "/home/";
+	// strcat(dir,getenv("USER"));
+	// chdir(dir);
 
 	// setting timer for the daemon
 	time_t end,start;
