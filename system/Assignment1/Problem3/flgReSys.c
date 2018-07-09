@@ -161,7 +161,7 @@ void spawnthreads(int *shmaddr)
 	// setting timer for the server
 	time_t endwait,start;
 	start = endwait = time(NULL); 
-	time_t seconds = 30; // five minutes
+	time_t seconds = 300; // five minutes
 	
 	// Initializing binary semaphores
 	for(i=0; i<MAX; i++)
